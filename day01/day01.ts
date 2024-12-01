@@ -12,6 +12,17 @@ export const Day01 = {
 
     return totalDifference;
   },
+  async Part2Answer(filename: string) {
+    const {left, right} = await parseLists(filename);
+    let score = 0;
+
+    left.forEach((v, i) => {
+      const matches = right.filter((n) => n == v).length;
+      score += v * matches;
+    });
+
+    return score;
+  },
 };
 
 async function parseLists(filename: string) {
@@ -36,4 +47,4 @@ function parseLine(line: string): {left: number; right: number} {
   return {left: Number.parseInt(parts[0]), right: Number.parseInt(parts[1])};
 }
 
-console.log(await Day01.Part1Answer('input.txt'));
+console.log(await Day01.Part2Answer('input.txt'));
