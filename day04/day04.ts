@@ -6,7 +6,8 @@ export const Day04 = {
     return findAllMatches(input);
   },
   async Part2Answer(filename: string) {
-    return 0;
+    const input = await readLines(filename);
+    return getXMasCount(input);
   },
 };
 
@@ -102,4 +103,41 @@ function reverseStrings(input: string[]) {
   return input.map((s) => s.split('').reverse().join(''));
 }
 
-console.log(await Day04.Part1Answer('input.txt'));
+function getXMasCount(puzzle: string[]): number {
+  let count = 0;
+  for (let i = 0; i < puzzle.length - 2; i++) {
+    for (let j = 0; j < puzzle[0].length - 2; j++) {
+      if (isXMas(i, j, puzzle)) {
+        count++;
+      }
+    }
+  }
+
+  return count;
+}
+
+/**
+ * Checks if there's an X-MAS at the spot
+ * @param row The row of the top left corner
+ * @param col The column of the top left corner
+ * @param puzzle The entire puzzle
+ */
+function isXMas(row: number, col: number, puzzle: string[]): boolean {
+  // Make sure the A is there
+  if (puzzle[row + 1][col + 1] !== 'A') return false;
+
+  // Make sure the downward diagonal is a "MAS"
+  if (puzzle[row][col] === 'M') {
+    if (puzzle[row + 2][col + 2] !== 'S') return false;
+  } else if (puzzle[row][col] === 'S') {
+    if (puzzle[row + 2][col + 2] !== 'M') return false;
+  } else {
+    return false;
+  }
+
+  // Check the other diagonal
+  const otherDiagonal = [puzzle[row][col + 2], puzzle[row + 2][col]];
+  return otherDiagonal.includes('M') && otherDiagonal.includes('S');
+}
+
+console.log(await Day04.Part2Answer('input.txt'));
