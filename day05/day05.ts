@@ -7,7 +7,10 @@ export const Day05 = {
     return sumByFunc(correctLists, getMiddleNumber);
   },
   async Part2Answer(filename: string) {
-    return 0;
+    const {rules, pageLists} = await parseInput(filename);
+    const incorrectLists = pageLists.filter((l) => !checkPageList(l, rules));
+    const resortedLists = incorrectLists.map((l) => sortPageList(l, rules));
+    return sumByFunc(resortedLists, getMiddleNumber);
   },
 };
 
@@ -15,6 +18,21 @@ type OrderRule = {
   before: number;
   after: number;
 };
+
+export function sortPageList(list: number[], rules: OrderRule[]): number[] {
+  return list.sort((a, b) => {
+    for (let i = 0; i < rules.length; i++) {
+      const {before, after} = rules[i];
+      if ([a, b].includes(before) && [a, b].includes(after)) {
+        // Rule applies to these
+        if (a === before) return -1;
+        if (a === after) return 1;
+      }
+    }
+    // Didn't hit an applicable rule
+    return 0;
+  });
+}
 
 export function checkPageList(list: number[], rules: OrderRule[]): boolean {
   for (let i = 0; i < rules.length; i++) {
@@ -51,4 +69,4 @@ function parseRule(input: string): OrderRule {
   return {before: Number.parseInt(parts[0]), after: Number.parseInt(parts[1])};
 }
 
-// console.log(await Day05.Part1Answer('input.txt'));
+// console.log(await Day05.Part2Answer('input.txt'));
