@@ -7,7 +7,9 @@ export const Day06 = {
     return countPath(path);
   },
   async Part2Answer(filename: string) {
-    return 0;
+    const map = await readLines(filename);
+    const path = getPatrolPath(map);
+    return countCycleOpportunities(map, path);
   },
 };
 
@@ -27,18 +29,67 @@ type PatrollingGuardState = {
 
 type GuardState = PatrollingGuardState | {status: 'gone'};
 
-function getPatrolPath(puzzle: string[]): boolean[][] {
-  let path: boolean[][] = Array.from({length: puzzle.length}, () =>
-    Array.from({length: puzzle[0].length}, () => false),
+function getPatrolPath(map: string[]): boolean[][] {
+  let path: boolean[][] = Array.from({length: map.length}, () =>
+    Array.from({length: map[0].length}, () => false),
   );
-  let guardState = getInitialState(puzzle);
+  let guardState = getInitialState(map);
 
   while (guardState.status === 'patrol') {
     path[guardState.row][guardState.col] = true;
-    guardState = getNextState(guardState, puzzle);
+    guardState = getNextState(guardState, map);
   }
 
   return path;
+}
+
+function countCycleOpportunities(map: string[], path: boolean[][]): number {
+  let cycles = 0;
+  const startingSpot = getInitialState(map) as PatrollingGuardState;
+
+  map.forEach((row, i) => {
+    row.split('').forEach((spot, j) => {
+      if (!path[i][j]) return; // not on the path
+      if (startingSpot.row === i && startingSpot.col === j) return; // Can't use starting spot
+
+      let modifiedMap = addObstacle(map, i, j);
+      if (checkCycle(modifiedMap)) {
+        cycles++;
+      }
+    });
+  });
+  return cycles;
+}
+
+function addObstacle(map: string[], row: number, col: number): string[] {
+  let modifiedMap = map.map((l) => l.split(''));
+  modifiedMap[row][col] = '#';
+  return modifiedMap.map((l) => l.join(''));
+}
+
+function checkCycle(map: string[]): boolean {
+  let prevLocations: Record<number, Record<number, Direction[]>> = {};
+  let guardState = getInitialState(map);
+
+  while (guardState.status === 'patrol') {
+    const prevDirections = prevLocations[guardState.row]?.[guardState.col] ?? [];
+    // If the guard has been in the same spot and the same direction before, we're in a cycle
+    if (prevDirections.includes(guardState.direction)) return true;
+
+    // Not looping yet, save off current state and get the next one
+    if (!prevLocations[guardState.row]) {
+      prevLocations[guardState.row] = {};
+    }
+    if (!prevLocations[guardState.row][guardState.col]) {
+      prevLocations[guardState.row][guardState.col] = [];
+    }
+    prevLocations[guardState.row][guardState.col] = [...prevDirections, guardState.direction];
+
+    guardState = getNextState(guardState, map);
+  }
+
+  // Finished without hitting loop
+  return false;
 }
 
 function getInitialState(map: string[]): GuardState {
@@ -52,8 +103,8 @@ function getInitialState(map: string[]): GuardState {
   return {status: 'gone'};
 }
 
-function getNextState(prevState: GuardState, puzzle: string[]): GuardState {
-  if (prevState.status === 'gone') return prevState;
+function getNextState(prevState: GuardState, map: string[]): GuardState {
+  if (prevState.status !== 'patrol') return prevState;
 
   // The next spot if the guard just goes straight forward
   const nextSpot = (() => {
@@ -72,14 +123,14 @@ function getNextState(prevState: GuardState, puzzle: string[]): GuardState {
   // Check if the guard is going out of bounds
   if (
     nextSpot.row < 0 ||
-    nextSpot.row >= puzzle.length ||
+    nextSpot.row >= map.length ||
     nextSpot.col < 0 ||
-    nextSpot.col >= puzzle[0].length
+    nextSpot.col >= map[0].length
   ) {
     return {status: 'gone'};
   }
 
-  const nextSpotContents = puzzle[nextSpot.row][nextSpot.col];
+  const nextSpotContents = map[nextSpot.row][nextSpot.col];
   if (nextSpotContents === '#') {
     // Hit an obstacle. Rotate
     return {...prevState, direction: (prevState.direction + 1) % 4};
@@ -102,4 +153,4 @@ function countPath(path: boolean[][]): number {
   return count;
 }
 
-console.log(await Day06.Part1Answer('input.txt'));
+// console.log(await Day06.Part2Answer('input.txt'));
