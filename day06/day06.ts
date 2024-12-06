@@ -29,69 +29,6 @@ type PatrollingGuardState = {
 
 type GuardState = PatrollingGuardState | {status: 'gone'};
 
-function getPatrolPath(map: string[]): boolean[][] {
-  let path: boolean[][] = Array.from({length: map.length}, () =>
-    Array.from({length: map[0].length}, () => false),
-  );
-  let guardState = getInitialState(map);
-
-  while (guardState.status === 'patrol') {
-    path[guardState.row][guardState.col] = true;
-    guardState = getNextState(guardState, map);
-  }
-
-  return path;
-}
-
-function countCycleOpportunities(map: string[], path: boolean[][]): number {
-  let cycles = 0;
-  const startingSpot = getInitialState(map) as PatrollingGuardState;
-
-  map.forEach((row, i) => {
-    row.split('').forEach((spot, j) => {
-      if (!path[i][j]) return; // not on the path
-      if (startingSpot.row === i && startingSpot.col === j) return; // Can't use starting spot
-
-      let modifiedMap = addObstacle(map, i, j);
-      if (checkCycle(modifiedMap)) {
-        cycles++;
-      }
-    });
-  });
-  return cycles;
-}
-
-function addObstacle(map: string[], row: number, col: number): string[] {
-  let modifiedMap = map.map((l) => l.split(''));
-  modifiedMap[row][col] = '#';
-  return modifiedMap.map((l) => l.join(''));
-}
-
-function checkCycle(map: string[]): boolean {
-  let prevLocations: Record<number, Record<number, Direction[]>> = {};
-  let guardState = getInitialState(map);
-
-  while (guardState.status === 'patrol') {
-    const prevDirections = prevLocations[guardState.row]?.[guardState.col] ?? [];
-    // If the guard has been in the same spot and the same direction before, we're in a cycle
-    if (prevDirections.includes(guardState.direction)) return true;
-
-    // Not looping yet, save off current state and get the next one
-    if (!prevLocations[guardState.row]) {
-      prevLocations[guardState.row] = {};
-    }
-    if (!prevLocations[guardState.row][guardState.col]) {
-      prevLocations[guardState.row][guardState.col] = [];
-    }
-    prevLocations[guardState.row][guardState.col] = [...prevDirections, guardState.direction];
-
-    guardState = getNextState(guardState, map);
-  }
-
-  // Finished without hitting loop
-  return false;
-}
-
 function getInitialState(map: string[]): GuardState {
   for (let i = 0; i < map.length; i++) {
     const line = map[i];
@@ -103,6 +40,9 @@ function getInitialState(map: string[]): GuardState {
   return {status: 'gone'};
 }
 
+/**
+ * This is the main movement logic. Return the next state based on the previous state and the map
+ */
 function getNextState(prevState: GuardState, map: string[]): GuardState {
   if (prevState.status !== 'patrol') return prevState;
 
@@ -139,6 +79,20 @@ function getNextState(prevState: GuardState, map: string[]): GuardState {
   return {...prevState, ...nextSpot};
 }
 
+// Part 1 ======================================================================
+
+function getPatrolPath(map: string[]): boolean[][] {
+  let path: boolean[][] = Array.from({length: map.length}, () => []);
+  let guardState = getInitialState(map);
+
+  while (guardState.status === 'patrol') {
+    path[guardState.row][guardState.col] = true;
+    guardState = getNextState(guardState, map);
+  }
+
+  return path;
+}
+
 function countPath(path: boolean[][]): number {
   let count = 0;
 
@@ -151,6 +105,54 @@ function countPath(path: boolean[][]): number {
   });
 
   return count;
+}
+
+// Part 2 ======================================================================
+
+function checkCycle(map: string[]): boolean {
+  let prevLocations: Record<number, Record<number, Direction[]>> = {};
+  let guardState = getInitialState(map);
+
+  while (guardState.status === 'patrol') {
+    const prevDirections = prevLocations[guardState.row]?.[guardState.col] ?? [];
+    // If the guard has been in the same spot and the same direction before, we're in a cycle
+    if (prevDirections.includes(guardState.direction)) return true;
+
+    // Not looping yet, save off current state and get the next one
+    if (!prevLocations[guardState.row]) {
+      prevLocations[guardState.row] = {};
+    }
+    prevLocations[guardState.row][guardState.col] = [...prevDirections, guardState.direction];
+
+    guardState = getNextState(guardState, map);
+  }
+
+  // Finished without hitting loop
+  return false;
+}
+
+function countCycleOpportunities(map: string[], path: boolean[][]): number {
+  let cycles = 0;
+  const startingSpot = getInitialState(map) as PatrollingGuardState;
+
+  map.forEach((row, i) => {
+    row.split('').forEach((spot, j) => {
+      if (!path[i][j]) return; // not on the path
+      if (startingSpot.row === i && startingSpot.col === j) return; // Can't use starting spot
+
+      let modifiedMap = addObstacle(map, i, j);
+      if (checkCycle(modifiedMap)) {
+        cycles++;
+      }
+    });
+  });
+  return cycles;
+}
+
+function addObstacle(map: string[], row: number, col: number): string[] {
+  let modifiedMap = map.map((l) => l.split(''));
+  modifiedMap[row][col] = '#';
+  return modifiedMap.map((l) => l.join(''));
 }
 
 // console.log(await Day06.Part2Answer('input.txt'));
