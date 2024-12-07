@@ -1,5 +1,5 @@
 import {test, expect} from 'bun:test';
-import {Day07, getOperators} from './day07';
+import {checkEquation, Day07, getAllOperators, getSimpleOperators} from './day07';
 
 test('Part1 test answer', async () => {
   const answer = await Day07.Part1Answer('test-input.txt');
@@ -10,19 +10,23 @@ test('Part1 real answer', async () => {
   expect(answer).toBe(2654749936343);
 });
 
-test.skip('Part2 test answer', async () => {
+test('Part2 test answer', async () => {
   const answer = await Day07.Part2Answer('test-input.txt');
-  expect(answer).toBe(1);
+  expect(answer).toBe(11387);
 });
 
-test.skip('Part2 real answer', async () => {
+test('Part2 real answer', async () => {
   const answer = await Day07.Part2Answer('input.txt');
-  expect(answer).toBe(1);
+  expect(answer).toBe(124060392153684);
 });
 
-test('getOperations', () => {
-  expect(getOperators(0, 2)).toEqual(['+', '+']);
-  expect(getOperators(1, 2)).toEqual(['*', '+']);
-  expect(getOperators(2, 2)).toEqual(['+', '*']);
-  expect(getOperators(3, 2)).toEqual(['*', '*']);
+test('getSimpleOperators', () => {
+  expect(getSimpleOperators(0, 2)).toEqual(['+', '+']);
+  expect(getSimpleOperators(1, 2)).toEqual(['*', '+']);
+  expect(getSimpleOperators(2, 2)).toEqual(['+', '*']);
+  expect(getSimpleOperators(3, 2)).toEqual(['*', '*']);
+});
+
+test('concat operator', () => {
+  expect(checkEquation({target: 1234, numbers: [12, 34]}, ['||'])).toBe(true);
 });
