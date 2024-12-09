@@ -9,7 +9,9 @@ export const Day09 = {
   },
   async Part2Answer(filename: string) {
     const input = await readTextFile(filename);
-    return 0;
+    const items = parseItems(input);
+    const condensed = condenseDiskWithWholeFiles(items);
+    return checkSum(condensed);
   },
 };
 
@@ -26,8 +28,9 @@ type EmptySpace = {
 
 type DiskItem = File | EmptySpace;
 
-type Block = {fileId: number};
+type Block = {fileId?: number};
 
+// Part 1 ======================================================================
 function condenseDisk(originalItems: DiskItem[]): DiskItem[] {
   let nextDisk = [...originalItems];
 
@@ -71,42 +74,62 @@ function condenseDisk(originalItems: DiskItem[]): DiskItem[] {
   return nextDisk;
 }
 
-/**
- * @deprecated - Only works if there are less than 10 files
- */
-function getDiskText(items: DiskItem[]): string {
-  let disk = '';
-  items.forEach((item) => {
-    const nextText = Array.from({length: item.size}, () =>
-      item.type === 'file' ? item.id : '.',
-    ).join('');
-    disk += nextText;
+// Part 2 ======================================================================
+function condenseDiskWithWholeFiles(originalItems: DiskItem[]): DiskItem[] {
+  let nextDisk = [...originalItems];
+
+  const fileIdsToMove: number[] = nextDisk
+    .slice()
+    .reverse()
+    .filter((item) => item.type === 'file')
+    .map((f) => f.id);
+
+  fileIdsToMove.forEach((fileId) => {
+    const fileIdx = nextDisk.findIndex((item) => item.type === 'file' && item.id === fileId);
+    const file = nextDisk[fileIdx];
+    if (!file) return;
+    if (file.type !== 'file') {
+      throw new Error('not a file');
+    }
+
+    const emptySpaceIdx = nextDisk.findIndex(
+      (item) => item.type === 'empty' && item.size >= file.size,
+    );
+    if (emptySpaceIdx === -1 || emptySpaceIdx > fileIdx) {
+      // Can't find anywhere to put the file
+      return;
+    }
+
+    const emptySpace = nextDisk[emptySpaceIdx];
+    nextDisk.splice(fileIdx, 1, {type: 'empty', size: file.size});
+    if (file.size === emptySpace.size) {
+      // Sizes are the same. Remove the empty space
+      nextDisk.splice(emptySpaceIdx, 1, file);
+    } else {
+      // More space than we need. Need to adjust the size
+      emptySpace.size = emptySpace.size - file.size;
+      nextDisk.splice(emptySpaceIdx, 0, file);
+    }
   });
-  return disk;
+
+  return nextDisk;
 }
 
-/**
- * @deprecated - Only works if there are less than 10 files
- */
-export function checkSumSimple(disk: string): number {
-  let sum = 0;
-  disk.split('').forEach((v, i) => {
-    sum += Number.parseInt(v) * i;
-  });
-  return sum;
-}
+// Scoring =====================================================================
 
 function checkSum(items: DiskItem[]): number {
   let blocks: Block[] = [];
   items.forEach((file) => {
-    if (file.type === 'empty') return;
-    const newBlocks: Block[] = Array.from({length: file.size}, () => ({fileId: file.id}));
+    const fileId = file.type === 'file' ? file.id : undefined;
+    const newBlocks: Block[] = Array.from({length: file.size}, () => ({fileId}));
     blocks.push(...newBlocks);
   });
 
   let sum = 0;
   blocks.forEach((block, i) => {
-    sum += block.fileId * i;
+    if (block.fileId !== undefined) {
+      sum += block.fileId * i;
+    }
   });
   return sum;
 }
@@ -124,4 +147,4 @@ function parseItems(input: string): DiskItem[] {
   });
 }
 
-// console.log(await Day09.Part1Answer('input.txt'));
+// console.log(await Day09.Part2Answer('input.txt'));
