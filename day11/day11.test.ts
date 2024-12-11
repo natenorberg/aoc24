@@ -11,12 +11,7 @@ test('Part1 real answer', async () => {
   expect(answer).toBe(224529);
 });
 
-test.skip('Part2 test answer', async () => {
-  const answer = await Day11.Part2Answer('test-input.txt');
-  expect(answer).toBe(1);
-});
-
 test.skip('Part2 real answer', async () => {
   const answer = await Day11.Part2Answer('input.txt');
-  expect(answer).toBe(1);
+  expect(answer).toBe(266820198587914);
 });
