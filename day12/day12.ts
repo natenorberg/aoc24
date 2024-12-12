@@ -4,11 +4,12 @@ export const Day12 = {
   async Part1Answer(filename: string) {
     const map = await readLines(filename);
     const regions = findRegions(map);
-    return sumByFunc(regions, getPrice);
+    return sumByFunc(regions, getPart1Price);
   },
   async Part2Answer(filename: string) {
     const map = await readLines(filename);
-    return 0;
+    const regions = findRegions(map);
+    return sumByFunc(regions, (r) => getPart2Price(r, map));
   },
 };
 
@@ -130,13 +131,136 @@ function getNextUnexploredPlot(explored: boolean[][]): Location | undefined {
 }
 
 // Part 1 =====================================================================
-function getPrice(region: Region): number {
+function getPart1Price(region: Region): number {
   const area = region.plots.length;
   const perimeter = sumByFunc(
     region.plots,
     (p) => Object.values(p.boundaries).filter(Boolean).length,
   );
   return area * perimeter;
+}
+
+// Part 1 =====================================================================
+function getPart2Price(region: Region, map: string[]): number {
+  const area = region.plots.length;
+  const horizontal = getHorizontalSides(region, map);
+  const vertical = getVerticalSides(region, map);
+
+  return area * (horizontal + vertical);
+}
+
+function getHorizontalSides(region: Region, map: string[]): number {
+  let topSides = 0;
+  let bottomSides = 0;
+  let topSideInProgress = false;
+  let bottomSideInProgress = false;
+
+  // When we do a jump, we want to count any in-progress sides
+  function reset() {
+    if (topSideInProgress) {
+      topSides++;
+      topSideInProgress = false;
+    }
+    if (bottomSideInProgress) {
+      bottomSides++;
+      bottomSideInProgress = false;
+    }
+  }
+
+  // Iterate top to bottom, left to right
+  for (let i = 0; i < map.length; i++) {
+    for (let j = 0; j < map[0].length; j++) {
+      const plot = region.plots.find((p) => p.row === i && p.col === j);
+      if (!plot) {
+        reset();
+        continue;
+      }
+
+      // Top border checks
+      if (plot.boundaries.top && !topSideInProgress) {
+        // Starting a new side
+        topSideInProgress = true;
+      }
+      if (!plot.boundaries.top && topSideInProgress) {
+        // Side is done
+        topSides++;
+        topSideInProgress = false;
+      }
+
+      // Bottom border checks
+      if (plot.boundaries.bottom && !bottomSideInProgress) {
+        // Starting a new side
+        bottomSideInProgress = true;
+      }
+      if (!plot.boundaries.bottom && bottomSideInProgress) {
+        // Side is done
+        bottomSides++;
+        bottomSideInProgress = false;
+      }
+    }
+
+    // Row complete. Check for any sides in progress
+    reset();
+  }
+
+  return topSides + bottomSides;
+}
+
+function getVerticalSides(region: Region, map: string[]): number {
+  let leftSides = 0;
+  let rightSides = 0;
+  let leftSideInProgress = false;
+  let rightSideInProgress = false;
+
+  // When we do a jump, we want to count any in-progress sides
+  function reset() {
+    if (leftSideInProgress) {
+      leftSides++;
+      leftSideInProgress = false;
+    }
+    if (rightSideInProgress) {
+      rightSides++;
+      rightSideInProgress = false;
+    }
+  }
+
+  // Iterate left to right, top to bottom
+  for (let j = 0; j < map[0].length; j++) {
+    for (let i = 0; i < map.length; i++) {
+      const plot = region.plots.find((p) => p.row === i && p.col === j);
+      if (!plot) {
+        reset();
+        continue;
+      }
+
+      // Top border checks
+      if (plot.boundaries.left && !leftSideInProgress) {
+        // Starting a new side
+        leftSideInProgress = true;
+      }
+      if (!plot.boundaries.left && leftSideInProgress) {
+        // Side is done
+        leftSides++;
+        leftSideInProgress = false;
+      }
+
+      // Bottom border checks
+      if (plot.boundaries.right && !rightSideInProgress) {
+        // Starting a new side
+        rightSideInProgress = true;
+      }
+      if (!plot.boundaries.right && rightSideInProgress) {
+        // Side is done
+        rightSides++;
+        rightSideInProgress = false;
+      }
+    }
+
+    // Col complete. Check for any sides in progress
+    reset();
+  }
+
+  return leftSides + rightSides;
 }
 
 // console.log(await Day12.Part2Answer('input.txt'));
