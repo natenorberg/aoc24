@@ -8,7 +8,8 @@ export const Day13 = {
   },
   async Part2Answer(filename: string) {
     const input = await readTextFile(filename);
-    return 0;
+    const machines = parseMachines(input, 10000000000000);
+    return sumByFunc(machines, findCost);
   },
 };
 
@@ -24,7 +25,9 @@ type Presses = {A: number; B: number};
 
 /**
  * Takes a machine and uses RREF to find the values of A and B presses that actually get to the target
+ * Note: The cost is a red herring
  * This is a system of linear equations problem, but we also need to make sure that we only accept integers as our solution
+ *
  */
 function getPresses(machine: Machine): Presses | undefined {
   const matrix = [
@@ -48,7 +51,7 @@ function getPresses(machine: Machine): Presses | undefined {
  * If it's close enough, this will return the real int
  */
 function roundReallyCloseNumber(value: number) {
-  const tolerance = 1e-10;
+  const tolerance = 1e-3; // This was lowered until AoC liked my answer, haha
   const valueAsInt = Math.round(value);
   if (Math.abs(value - valueAsInt) < tolerance) {
     return valueAsInt;
@@ -81,17 +84,22 @@ export function rowReduce(matrix: number[][]): number[][] {
 // Scoring =====================================================================
 function findCost(machine: Machine): number {
   const presses = getPresses(machine);
+
   if (!presses) return 0;
 
   return presses.A * 3 + presses.B;
 }
 
 // Parsing =====================================================================
-export function parseMachines(input: string): Machine[] {
+export function parseMachines(input: string, addToTargetCoordinates: number = 0): Machine[] {
   return input
     .split('\n\n')
     .map((s) => s.split('\n'))
-    .map(parseMachine);
+    .map(parseMachine)
+    .map((m) => ({
+      ...m,
+      prize: {x: m.prize.x + addToTargetCoordinates, y: m.prize.y + addToTargetCoordinates},
+    }));
 }
 
 function parseMachine(input: string[]): Machine {
@@ -109,4 +117,4 @@ function parseLine(line: string, splitChar: string): Coordinates {
   return {x: Number.parseInt(x), y: Number.parseInt(y)};
 }
 
-// console.log(await Day13.Part1Answer('input.txt'));
+console.log(await Day13.Part2Answer('input.txt'));

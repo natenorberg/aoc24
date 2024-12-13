@@ -12,14 +12,9 @@ test('Part1 real answer', async () => {
   expect(answer).toBe(36870);
 });
 
-test.skip('Part2 test answer', async () => {
-  const answer = await Day13.Part2Answer('test-input.txt');
-  expect(answer).toBe(1);
-});
-
-test.skip('Part2 real answer', async () => {
+test('Part2 real answer', async () => {
   const answer = await Day13.Part2Answer('input.txt');
-  expect(answer).toBe(1);
+  expect(answer).toBe(78101482023732);
 });
 
 test('parseMachines', async () => {
