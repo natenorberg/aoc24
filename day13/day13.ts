@@ -36,25 +36,24 @@ function getPresses(machine: Machine): Presses | undefined {
   ];
 
   rowReduce(matrix);
-  const A = matrix[0][2];
-  const B = matrix[1][2];
-  const aRounded = roundReallyCloseNumber(A);
-  const bRounded = roundReallyCloseNumber(B);
 
-  if (aRounded !== undefined && bRounded !== undefined) {
-    return {A: aRounded, B: bRounded};
-  }
-}
+  /**
+   * After RREF, the last numbers of each row are the values for the number of presses of the A and B buttons
+   * The catch is that it's only a valid solution if they are integers (i.e. you can't push a button 3.12 times)
+   *
+   * The other catch is that RREF introduces some rounding errors, so using Number.isInteger is
+   * going to reject some valid solutions. One solution would be to check if it's really close to
+   * an integer, but then you have to get the threshold correct.
+   *
+   * A simple way that's guaranteed to be right is to just round those numbers to the nearest integer
+   * and just check if it's a valid solution
+   */
 
-/**
- * When doing math, you can end up with a number that's barely not an int
- * If it's close enough, this will return the real int
- */
-function roundReallyCloseNumber(value: number) {
-  const tolerance = 1e-3; // This was lowered until AoC liked my answer, haha
-  const valueAsInt = Math.round(value);
-  if (Math.abs(value - valueAsInt) < tolerance) {
-    return valueAsInt;
+  const A = Math.round(matrix[0][2]);
+  const B = Math.round(matrix[1][2]);
+
+  if (isSolution({A, B}, machine)) {
+    return {A, B};
   }
 }
 
@@ -79,6 +78,16 @@ export function rowReduce(matrix: number[][]): number[][] {
   matrix[0].forEach((n, i) => (matrix[0][i] = n - matrix[1][i] * scale));
 
   return matrix;
+}
+
+/**
+ * Check if the combination of presses is a solution for the machine
+ */
+function isSolution(presses: Presses, machine: Machine): boolean {
+  return (
+    presses.A * machine.A.x + presses.B * machine.B.x === machine.prize.x &&
+    presses.A * machine.A.y + presses.B * machine.B.y === machine.prize.y
+  );
 }
 
 // Scoring =====================================================================
