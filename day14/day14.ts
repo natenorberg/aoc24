@@ -1,26 +1,32 @@
 import {readLines} from '../utils';
+import {isChristmasTree} from './spoilers';
 
 export const Day14 = {
   async Part1Answer(filename: string, dimensions: Dimensions) {
     const lines = await readLines(filename);
     const robots = lines.map(parseRobot);
 
-    const endingPositions = simulateRobots(robots, dimensions, seconds(100));
+    const {endingPositions} = simulateRobots(robots, dimensions, seconds(100));
     return checkQuadrants(endingPositions, dimensions);
   },
   async Part2Answer(filename: string, dimensions: Dimensions) {
     const lines = await readLines(filename);
     const robots = lines.map(parseRobot);
 
-    const endingPositions = simulateRobots(robots, dimensions, () => false);
+    const {endingPositions, secondsElapsed} = simulateRobots(robots, dimensions, (p, i) =>
+      isChristmasTree(p, i, dimensions),
+    );
+
+    // 🎄 Print the Christmas tree for fun 🎄
     printArea(endingPositions, dimensions);
-    return checkQuadrants(endingPositions, dimensions);
+
+    return secondsElapsed;
   },
 };
 
-type Dimensions = {width: number; height: number};
+export type Dimensions = {width: number; height: number};
 
-type Coordinates = {x: number; y: number};
+export type Coordinates = {x: number; y: number};
 
 export type RobotDefinition = {
   start: Coordinates;
@@ -37,10 +43,11 @@ export function simulateRobots(
   robotDefs: RobotDefinition[],
   dimensions: Dimensions,
   endingCondition: EndingCondition,
-): Coordinates[] {
+): {endingPositions: Coordinates[]; secondsElapsed: number} {
   let positions: Coordinates[] = robotDefs.map((r) => r.start);
+  let i = 0; // Moving this outside the for loop so that it can be returned for the part 2 answer
 
-  for (let i = 0; !endingCondition(positions, i); i++) {
+  for (; !endingCondition(positions, i); i++) {
     positions = positions.map((r, i) => {
       const velocity = robotDefs[i].velocity;
       return {
@@ -50,7 +57,7 @@ export function simulateRobots(
     });
   }
 
-  return positions;
+  return {endingPositions: positions, secondsElapsed: i};
 }
 
 function printArea(positions: Coordinates[], dimensions: Dimensions) {
@@ -60,17 +67,6 @@ function printArea(positions: Coordinates[], dimensions: Dimensions) {
     ).join(''),
   ).join('\n');
   console.log(map);
-}
-
-function isSymmetrical(positions: Coordinates[], dimensions: Dimensions) {
-  const middleX = (dimensions.width + 1) / 2 - 1;
-  const middleY = (dimensions.height + 1) / 2 - 1;
-
-  const map: boolean[][] = Array.from({length: dimensions.height}, (_row, i) =>
-    Array.from({length: dimensions.width}, (_, j) =>
-      positions.some(({x, y}) => x === j && y === i) ? true : false,
-    ),
-  );
 }
 
 // Scoring =====================================================================
