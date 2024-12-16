@@ -2,11 +2,12 @@ import {readLines} from '../utils';
 
 export const Day16 = {
   async Part1Answer(filename: string) {
-    const lines = await readLines(filename);
-    return 0;
+    const maze = await readLines(filename);
+    const graph = buildGraph(maze);
+    return findShortestDistance(graph);
   },
   async Part2Answer(filename: string) {
-    const lines = await readLines(filename);
+    const maze = await readLines(filename);
     return 0;
   },
 };
@@ -24,6 +25,7 @@ type Point = {row: number; col: number};
 
 type State = Point & {
   direction: Direction;
+  isStart?: boolean;
   isEnd?: boolean;
   transitions: Record<StateKey, number>;
 };
@@ -36,7 +38,12 @@ function getKey(state: State): StateKey {
 
 export function buildGraph(maze: string[]): Graph {
   let graph: Graph = {};
-  const initialState: State = {...getStartPoint(maze), direction: Direction.East, transitions: {}};
+  const initialState: State = {
+    ...getStartPoint(maze),
+    direction: Direction.East,
+    isStart: true,
+    transitions: {},
+  };
   let statesToExplore = [initialState];
 
   /**
@@ -91,7 +98,7 @@ export function buildGraph(maze: string[]): Graph {
     // Check for turns
     getTurns(state.direction).forEach((turn) => {
       if (canMove(state, turn)) {
-        const nextState = {...state, direction: turn, transitions: {}};
+        const nextState = {row: state.row, col: state.col, direction: turn, transitions: {}};
         addTransition(state, nextState, 1000);
         nextStates.push(nextState);
       }
@@ -150,3 +157,67 @@ function getStartPoint(maze: string[]): Point {
   }
   throw new Error('no start found');
 }
+
+// Shortest path ==============================================================
+export function findShortestDistance(graph: Graph): number {
+  const endState = Object.values(graph).find((s) => s.isEnd);
+  const startState = Object.values(graph).find((s) => s.isStart);
+  if (!endState || !startState) {
+    throw new Error('Missing important state');
+  }
+
+  const endKey = getKey(endState);
+  const startKey = getKey(startState);
+
+  return dijkstra(graph, startKey, endKey);
+}
+
+// Getting a bit of help on the implementation side from ChatGPT on this one
+
+class PriorityQueue<T> {
+  private heap: {value: T; priority: number}[] = [];
+
+  enqueue(value: T, priority: number) {
+    this.heap.push({value, priority});
+    this.heap.sort((a, b) => a.priority - b.priority);
+  }
+
+  dequeue() {
+    return this.heap.shift()?.value;
+  }
+
+  isEmpty() {
+    return this.heap.length === 0;
+  }
+}
+
+function dijkstra(graph: Graph, start: StateKey, end: StateKey): number {
+  const distances: Record<StateKey, number> = {};
+  const priorityQueue = new PriorityQueue<string>();
+  const visited = new Set<string>();
+
+  Object.keys(graph).forEach((key) => (distances[key] = Infinity));
+  distances[start] = 0;
+
+  priorityQueue.enqueue(start, 0);
+
+  while (!priorityQueue.isEmpty()) {
+    const currentNode = priorityQueue.dequeue()!;
+    if (visited.has(currentNode)) continue;
+    visited.add(currentNode);
+
+    if (currentNode === end) return distances[end]; // Found path
+
+    Object.entries(graph[currentNode].transitions).forEach(([neighbor, cost]) => {
+      const newDistance = distances[currentNode] + cost;
+
+      if (newDistance < distances[neighbor]) {
+        distances[neighbor] = newDistance;
+        priorityQueue.enqueue(neighbor, newDistance);
+      }
+    });
+  }
+  return Infinity;
+}
+
+// console.log(await Day16.Part1Answer('input.txt'));

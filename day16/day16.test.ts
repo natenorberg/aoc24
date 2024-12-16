@@ -1,14 +1,14 @@
 import {test, expect} from 'bun:test';
-import {buildGraph, Day16, Direction} from './day16';
+import {buildGraph, Day16, Direction, findShortestDistance} from './day16';
 
-test.skip('Part1 test answer', async () => {
+test('Part1 test answer', async () => {
   const answer = await Day16.Part1Answer('test-input.txt');
   expect(answer).toBe(7036);
 });
 
-test.skip('Part1 real answer', async () => {
+test('Part1 real answer', async () => {
   const answer = await Day16.Part1Answer('input.txt');
-  expect(answer).toBe(1);
+  expect(answer).toBe(92432);
 });
 
 test.skip('Part2 test answer', async () => {
@@ -83,7 +83,13 @@ test('createGraph', () => {
     },
 
     '4-1-N': {row: 4, col: 1, direction: Direction.North, transitions: {'4-1-E': 1000, '2-1-N': 2}},
-    '4-1-E': {row: 4, col: 1, direction: Direction.East, transitions: {'4-1-N': 1000, '4-3-E': 2}},
+    '4-1-E': {
+      row: 4,
+      col: 1,
+      direction: Direction.East,
+      isStart: true,
+      transitions: {'4-1-N': 1000, '4-3-E': 2},
+    },
     '4-1-S': {row: 4, col: 1, direction: Direction.South, transitions: {'4-1-E': 1000}},
 
     '4-3-E': {row: 4, col: 3, direction: Direction.East, transitions: {}},
@@ -98,4 +104,10 @@ test('createGraph', () => {
     '4-8-S': {row: 4, col: 8, direction: Direction.South, transitions: {'4-8-W': 1000}},
     '4-8-W': {row: 4, col: 8, direction: Direction.West, transitions: {'4-8-N': 1000, '4-5-W': 3}},
   });
+});
+
+test('findShortestDistance', () => {
+  const input = simpleMaze.trim().split('\n');
+  const graph = buildGraph(input);
+  expect(findShortestDistance(graph)).toBe(3010);
 });
