@@ -1,5 +1,6 @@
 import {test, expect} from 'bun:test';
 import {Day15, determineMove, Direction, Item} from './day15';
+import {Day15_Alt} from './day15-alt';
 
 test('Part1 small test answer', async () => {
   const answer = await Day15.Part1Answer('small-test-input.txt');
@@ -13,6 +14,21 @@ test('Part1 large test answer', async () => {
 
 test('Part1 real answer', async () => {
   const answer = await Day15.Part1Answer('input.txt');
+  expect(answer).toBe(1509863);
+});
+
+test('Part1 alt small test answer', async () => {
+  const answer = await Day15_Alt.Part1Answer('small-test-input.txt');
+  expect(answer).toBe(2028);
+});
+
+test('Part1 alt large test answer', async () => {
+  const answer = await Day15_Alt.Part1Answer('large-test-input.txt');
+  expect(answer).toBe(10092);
+});
+
+test('Part1 alt real answer', async () => {
+  const answer = await Day15_Alt.Part1Answer('input.txt');
   expect(answer).toBe(1509863);
 });
 

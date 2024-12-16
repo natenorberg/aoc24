@@ -144,4 +144,4 @@ function printMap(map: Item[][]) {
   console.log(map.map((line) => line.join('')).join('\n'));
 }
 
-console.log(await Day15.Part1Answer('input.txt'));
+// console.log(await Day15.Part1Answer('input.txt'));
