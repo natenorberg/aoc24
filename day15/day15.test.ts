@@ -1,6 +1,6 @@
 import {test, expect} from 'bun:test';
-import {Day15, determineMove, Direction, Item} from './day15';
-import {Day15_Alt} from './day15-alt';
+import {Day15, Direction} from './day15';
+import {Day15_Alt, determineMove, Item} from './day15_alt';
 
 test('Part1 small test answer', async () => {
   const answer = await Day15.Part1Answer('small-test-input.txt');
@@ -32,14 +32,14 @@ test('Part1 alt real answer', async () => {
   expect(answer).toBe(1509863);
 });
 
-test.skip('Part2 test answer', async () => {
-  const answer = await Day15.Part2Answer('test-input.txt');
-  expect(answer).toBe(1);
+test('Part2 test answer', async () => {
+  const answer = await Day15.Part2Answer('large-test-input.txt');
+  expect(answer).toBe(9021);
 });
 
-test.skip('Part2 real answer', async () => {
+test('Part2 real answer', async () => {
   const answer = await Day15.Part2Answer('input.txt');
-  expect(answer).toBe(1);
+  expect(answer).toBe(1548815);
 });
 
 function getTestMap(input: string): Item[][] {
