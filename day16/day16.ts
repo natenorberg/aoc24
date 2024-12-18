@@ -1,3 +1,4 @@
+import {dijkstra} from '../dijkstra';
 import {readLines} from '../utils';
 
 export const Day16 = {
@@ -170,54 +171,6 @@ export function findShortestDistance(graph: Graph): number {
   const startKey = getKey(startState);
 
   return dijkstra(graph, startKey, endKey);
-}
-
-// Getting a bit of help on the implementation side from ChatGPT on this one
-
-class PriorityQueue<T> {
-  private heap: {value: T; priority: number}[] = [];
-
-  enqueue(value: T, priority: number) {
-    this.heap.push({value, priority});
-    this.heap.sort((a, b) => a.priority - b.priority);
-  }
-
-  dequeue() {
-    return this.heap.shift()?.value;
-  }
-
-  isEmpty() {
-    return this.heap.length === 0;
-  }
-}
-
-function dijkstra(graph: Graph, start: StateKey, end: StateKey): number {
-  const distances: Record<StateKey, number> = {};
-  const priorityQueue = new PriorityQueue<string>();
-  const visited = new Set<string>();
-
-  Object.keys(graph).forEach((key) => (distances[key] = Infinity));
-  distances[start] = 0;
-
-  priorityQueue.enqueue(start, 0);
-
-  while (!priorityQueue.isEmpty()) {
-    const currentNode = priorityQueue.dequeue()!;
-    if (visited.has(currentNode)) continue;
-    visited.add(currentNode);
-
-    if (currentNode === end) return distances[end]; // Found path
-
-    Object.entries(graph[currentNode].transitions).forEach(([neighbor, cost]) => {
-      const newDistance = distances[currentNode] + cost;
-
-      if (newDistance < distances[neighbor]) {
-        distances[neighbor] = newDistance;
-        priorityQueue.enqueue(neighbor, newDistance);
-      }
-    });
-  }
-  return Infinity;
 }
 
 // console.log(await Day16.Part1Answer('input.txt'));
