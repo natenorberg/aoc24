@@ -10,9 +10,19 @@ export const Day18 = {
     const graph = buildGraph(dimensions, walkableSpaces);
     return dijkstra(graph, '0-0', `${dimensions.width - 1}-${dimensions.height - 1}`);
   },
-  async Part2Answer(filename: string) {
+  async Part2Answer(filename: string, dimensions: Dimensions, initialBytes: number) {
     const lines = await readLines(filename);
-    return 0;
+    const points = parsePoints(lines);
+
+    for (let i = initialBytes; i < points.length; i++) {
+      const fallenPoints = points.slice(0, i);
+      const walkableSpaces = getWalkableSpaces(dimensions, fallenPoints);
+      const graph = buildGraph(dimensions, walkableSpaces);
+      const path = dijkstra(graph, '0-0', `${dimensions.width - 1}-${dimensions.height - 1}`);
+      if (path === Infinity) {
+        return lines[i - 1];
+      }
+    }
   },
 };
 
@@ -81,4 +91,4 @@ function parsePoints(input: string[]): Point[] {
   });
 }
 
-console.log(await Day18.Part1Answer('input.txt', {width: 71, height: 71}, 1024));
+// console.log(await Day18.Part2Answer('input.txt', {width: 71, height: 71}, 1024));
