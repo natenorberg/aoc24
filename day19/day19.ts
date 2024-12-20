@@ -1,46 +1,66 @@
-import {readTextFile} from '../utils';
+import {readTextFile, sumByFunc} from '../utils';
 
 export const Day19 = {
   async Part1Answer(filename: string) {
     const input = await readTextFile(filename);
     const {towels, patterns} = parseInput(input);
-    return patterns.filter((p) => isPatternValid(p, towels)).length;
+    return patterns.filter((p) => getValidArrangements(p, towels)).length;
   },
   async Part2Answer(filename: string) {
     const input = await readTextFile(filename);
-    return 0;
+    const {towels, patterns} = parseInput(input);
+    console.log(patterns.map((p) => getValidArrangements(p, towels)));
+
+    return sumByFunc(patterns, (p) => getValidArrangements(p, towels));
   },
 };
 
-export function isPatternValid(pattern: string, towels: string[]): boolean {
+export function getValidArrangements(pattern: string, towels: string[]): number {
+  let validArrangements = 0;
   let knownWrongPatterns: string[] = [];
 
-  function isSubPatternValid(pattern: string): boolean {
+  function getSubPatternValidArrangements(pattern: string): number {
+    let arrangements = 0;
+    // console.log('subpattern', pattern);
+
     if (knownWrongPatterns.includes(pattern)) {
-      return false;
+      // console.log(`we know ${pattern} is wrong`);
+      return 0;
     }
 
     if (towels.includes(pattern)) {
-      return true;
+      // console.log('incrementing');
+      return 1;
     }
 
     for (let i = 0; i < towels.length; i++) {
       const towel = towels[i];
+      // console.log(`${pattern} checking ${towel}`);
       if (pattern.startsWith(towel)) {
+        // console.log(`"${pattern}" starts with "${towel}"`);
+
         // Check if we can match the rest of the input
         const restOfPattern = pattern.slice(towel.length);
-        if (isSubPatternValid(restOfPattern)) {
-          return true;
+        const validSubPatternArrangements = getSubPatternValidArrangements(restOfPattern);
+        if (validSubPatternArrangements) {
+          console.log('incrementing', validSubPatternArrangements);
+
+          arrangements += validSubPatternArrangements;
+          return validSubPatternArrangements;
         }
       }
     }
 
     // Nothing matched
-    knownWrongPatterns.push(pattern);
-    return false;
+    if (arrangements === 0) {
+      knownWrongPatterns.push(pattern);
+    }
+
+    return arrangements;
   }
 
-  return isSubPatternValid(pattern);
+  return getSubPatternValidArrangements(pattern);
+  // console.log('returning from', pattern);
 }
 
 // Parsing =====================================================================
