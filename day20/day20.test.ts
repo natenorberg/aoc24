@@ -27,7 +27,7 @@ test('getSteps', async () => {
 test('findCheats', async () => {
   const maze = await readLines('test-input.txt');
   const steps = getSteps(maze);
-  const cheats = findCheats(steps);
+  const cheats = findCheats(steps, 2);
   expect(cheats).toEqual({
     2: 14,
     4: 14,
@@ -40,5 +40,27 @@ test('findCheats', async () => {
     38: 1,
     40: 1,
     64: 1,
+  });
+});
+
+test('findCheats part 2', async () => {
+  const maze = await readLines('test-input.txt');
+  const steps = getSteps(maze);
+  const cheats = findCheats(steps, 20);
+  expect(cheats).toEqual({
+    50: 32,
+    52: 31,
+    54: 29,
+    56: 39,
+    58: 25,
+    60: 23,
+    62: 20,
+    64: 19,
+    66: 12,
+    68: 14,
+    70: 12,
+    72: 22,
+    74: 4,
+    76: 3,
   });
 });

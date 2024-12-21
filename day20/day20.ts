@@ -4,7 +4,7 @@ export const Day20 = {
   async Part1Answer(filename: string) {
     const maze = await readLines(filename);
     const steps = getSteps(maze);
-    const cheats = findCheats(steps);
+    const cheats = findCheats(steps, 2);
     return Object.entries(cheats).reduce((total, [saved, cheats]) => {
       if (Number.parseInt(saved) >= 100) {
         return total + cheats;
@@ -14,17 +14,27 @@ export const Day20 = {
   },
   async Part2Answer(filename: string) {
     const maze = await readLines(filename);
-    return 0;
+    const steps = getSteps(maze);
+    const cheats = findCheats(steps, 20);
+    return Object.entries(cheats).reduce((total, [saved, cheats]) => {
+      if (Number.parseInt(saved) >= 100) {
+        return total + cheats;
+      }
+      return total;
+    }, 0);
   },
 };
 
 type PathValue = 'S' | '.' | 'E';
 
-type Step = {
-  id: number;
-  value: PathValue;
+type Point = {
   row: number;
   col: number;
+};
+
+type Step = Point & {
+  id: number;
+  value: PathValue;
   direction?: Direction;
 };
 
@@ -112,16 +122,16 @@ export function getSteps(maze: string[]): Step[] {
   return steps;
 }
 
-export function findCheats(steps: Step[]): Record<number, number> {
+export function findCheats(steps: Step[], cheatDistance: number): Record<number, number> {
   let cheats: Record<number, number> = {};
 
   steps.forEach((step) => {
-    cheatOffsets.forEach((diff) => {
-      const nextStep = steps.find(
-        (s) => s.row === step.row + diff[0] && s.col === step.col + diff[1],
-      );
-      if (!nextStep) return;
-      const savedTime = nextStep.id - step.id - 2;
+    const cheatSteps = steps.filter(
+      (s) => s.id !== step.id && getDistance(step, s) <= cheatDistance,
+    );
+
+    cheatSteps.forEach((cheatStep) => {
+      const savedTime = cheatStep.id - step.id - cheatDistance;
       if (savedTime > 0) {
         cheats[savedTime] = cheats[savedTime] ? cheats[savedTime] + 1 : 1;
       }
@@ -131,15 +141,8 @@ export function findCheats(steps: Step[]): Record<number, number> {
   return cheats;
 }
 
-const cheatOffsets = [
-  [-2, 0],
-  [-1, 1],
-  [0, 2],
-  [1, 1],
-  [2, 0],
-  [1, -1],
-  [0, -2],
-  [-1, -1],
-];
+function getDistance(a: Point, b: Point): number {
+  return Math.abs(a.row - b.row) + Math.abs(a.col - b.col);
+}
 
-console.log(await Day20.Part1Answer('input.txt'));
+// console.log(await Day20.Part2Answer('input.txt'));
