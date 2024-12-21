@@ -7,14 +7,9 @@ test('Part1 real answer', async () => {
   expect(answer).toBe(1384);
 });
 
-test.skip('Part2 test answer', async () => {
-  const answer = await Day20.Part2Answer('test-input.txt');
-  expect(answer).toBe(1);
-});
-
-test.skip('Part2 real answer', async () => {
+test('Part2 real answer', async () => {
   const answer = await Day20.Part2Answer('input.txt');
-  expect(answer).toBe(1);
+  expect(answer).toBe(1008542);
 });
 
 test('getSteps', async () => {
@@ -47,20 +42,18 @@ test('findCheats part 2', async () => {
   const maze = await readLines('test-input.txt');
   const steps = getSteps(maze);
   const cheats = findCheats(steps, 20);
-  expect(cheats).toEqual({
-    50: 32,
-    52: 31,
-    54: 29,
-    56: 39,
-    58: 25,
-    60: 23,
-    62: 20,
-    64: 19,
-    66: 12,
-    68: 14,
-    70: 12,
-    72: 22,
-    74: 4,
-    76: 3,
-  });
+  expect(cheats[50]).toBe(32);
+  expect(cheats[52]).toBe(31);
+  expect(cheats[54]).toBe(29);
+  expect(cheats[56]).toBe(39);
+  expect(cheats[58]).toBe(25);
+  expect(cheats[60]).toBe(23);
+  expect(cheats[62]).toBe(20);
+  expect(cheats[64]).toBe(19);
+  expect(cheats[66]).toBe(12);
+  expect(cheats[68]).toBe(14);
+  expect(cheats[70]).toBe(12);
+  expect(cheats[72]).toBe(22);
+  expect(cheats[74]).toBe(4);
+  expect(cheats[76]).toBe(3);
 });

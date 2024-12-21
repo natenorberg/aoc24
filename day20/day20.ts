@@ -131,7 +131,7 @@ export function findCheats(steps: Step[], cheatDistance: number): Record<number,
     );
 
     cheatSteps.forEach((cheatStep) => {
-      const savedTime = cheatStep.id - step.id - cheatDistance;
+      const savedTime = cheatStep.id - step.id - getDistance(step, cheatStep);
       if (savedTime > 0) {
         cheats[savedTime] = cheats[savedTime] ? cheats[savedTime] + 1 : 1;
       }
