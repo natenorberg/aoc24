@@ -8,6 +8,12 @@ export async function readLines(filename: string) {
   return text.split('\n');
 }
 
+export function sum(items: number[]): number {
+  return items.reduce((total, item) => {
+    return total + item;
+  }, 0);
+}
+
 export function sumProperty<T>(items: T[], property: keyof T): number {
   return items.reduce((total, item) => {
     return total + (item[property] as number);
