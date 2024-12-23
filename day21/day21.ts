@@ -33,18 +33,24 @@ function getPressesForDigit(from: string, to: string, pad: string[]): string {
   const yDistance = toPoint.row - fromPoint.row;
   const xDistance = toPoint.col - fromPoint.col;
   let presses: string = '';
-  if (xDistance > 0) {
-    presses = presses + '>'.repeat(xDistance);
-  }
-  if (yDistance < 0) {
-    presses = presses + '^'.repeat(yDistance * -1);
-  }
-  if (xDistance < 0) {
-    presses = presses + '<'.repeat(xDistance * -1);
-  }
-  if (yDistance > 0) {
-    presses = presses + 'v'.repeat(yDistance);
-  }
+
+  const directionOrder = fromPoint.row === 3 ? ['>', '^', '<', 'v'] : ['>', '<', '^', 'v'];
+
+  directionOrder.forEach((direction) => {
+    if (direction === '>' && xDistance > 0) {
+      presses = presses + '>'.repeat(xDistance);
+    }
+    if (direction === '^' && yDistance < 0) {
+      presses = presses + '^'.repeat(yDistance * -1);
+    }
+    if (direction === '<' && xDistance < 0) {
+      presses = presses + '<'.repeat(xDistance * -1);
+    }
+    if (direction === 'v' && yDistance > 0) {
+      presses = presses + 'v'.repeat(yDistance);
+    }
+  });
+
   return presses;
 }
 
@@ -180,3 +186,5 @@ function getComplexity(code: string): number {
   const codeNumber = Number.parseInt(code.slice(0, -1));
   return codeNumber * presses.length;
 }
+
+console.log(await Day21.Part1Answer('input.txt'));

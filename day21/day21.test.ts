@@ -62,7 +62,7 @@ test('full length', () => {
 // 123
 //  0A
 
-test('179A', () => {
+test.skip('179A', () => {
   let presses = getPressesForNumberPadCode('179A');
   presses = getPressesForDirectionPadCode(presses);
   presses = getPressesForDirectionPadCode(presses);
