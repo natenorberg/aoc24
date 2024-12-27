@@ -12,7 +12,7 @@ type Node = Point & {
 
 export type Graph = Record<NodeKey, Node>;
 
-class PriorityQueue<T> {
+export class PriorityQueue<T> {
   private heap: {value: T; priority: number}[] = [];
 
   enqueue(value: T, priority: number) {
